@@ -19,7 +19,7 @@ stage is available while creating new pipelines. It describes the metadata of th
 
 An example template running a custom job to perform the `generic/pod-delete` chaos experiment is provided below: 
 
-**Note**: The chaos jobs need the litmus chaos operator & CRDs to be installed. You can refer to the install & uninstall templates for litmus in [here](./templates)
+**Note**: The chaos jobs need the litmus chaos operator & CRDs to be installed. You can refer to the install & uninstall templates for litmus in [here](./templates/litmus-infra-ops)
 
 ```yaml
 job:
