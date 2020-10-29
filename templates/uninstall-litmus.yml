@@ -2,8 +2,8 @@
 job:
   preconfigured:
     kubernetes:
-      - label: uninstallation
-        type: ChaosOperator
+      - label: Uninstall-Litmus
+        type: ChaosOperatorRemove
         description: Uninstall litmus and its components
         cloudProvider: kubernetes
         account: spinnaker

@@ -2,8 +2,8 @@
 job:
   preconfigured:
     kubernetes:
-      - label: installation
-        type: ChaosOperator
+      - label: Install-Litmus
+        type: ChaosOperatorSetup
         description: Install and configure litmus
         cloudProvider: kubernetes
         account: spinnaker
@@ -43,7 +43,7 @@ job:
                       - name: OPERATOR_IMAGE
                         value: $(CHAOS_OPERATOR_IMAGE)
                       - name: RUNNER_IMAGE
-                        value: "$(CHAOS_RUNNER_IMAGE)"
+                        value: $(CHAOS_RUNNER_IMAGE)
                       - name: APP_NS
                         value: $(APPLICATION_NAMESPACE)                        
                     command: ["/bin/bash"]

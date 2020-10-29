@@ -43,9 +43,9 @@ job:
                       - name: APP_NS
                         value: $(APPLICATION_NAMESPACE)
                       - name: APP_LABEL
-                        value: "$(APPLICATION_LABEL)"
+                        value: $(APPLICATION_LABEL)
                       - name: TOTAL_CHAOS_DURATION
-                        value: "$(CHAOS_DURATION)"                          
+                        value: "$(CHAOS_DURATION)"                        
                     command: ["/bin/bash"]
                     args:
                     - -c 
