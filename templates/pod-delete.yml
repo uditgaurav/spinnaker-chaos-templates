@@ -1,0 +1,53 @@
+---
+job:
+  preconfigured:
+    kubernetes:
+      - label: Pod-Delete-Chaos
+        type: ChaosExperiment
+        description: Kill an application pod
+        cloudProvider: kubernetes
+        account: spinnaker
+        credentials: spinnaker
+        application: hello
+        waitForCompletion: true
+        parameters:
+          - name: APPLICATION_NAMESPACE
+              label: Namespace of AUT
+              description: Namespace where chaos will occur
+              mapping: manifest.spec.template.spec.containers[0].env[0].value
+              defaultValue: "spinnaker"
+          - name: APPLICATION_LABEL
+              label: Label of AUT
+              description: Label by which app is filtered
+              mapping: manifest.spec.template.spec.containers[0].env[1].value
+              defaultValue: "name=hello"
+          - name: CHAOS_DURATION
+              label: Chaos duration
+              description: The time duration for chaos insertion (in sec)	
+              mapping: manifest.spec.template.spec.containers[0].env[3].value
+              defaultValue: "30"                           
+        manifest:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+              name: run-pod-delete-chaos
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                containers: 
+                  - name: run-pod-delete-chaos
+                    image: mayadata-io/chaos-ci-lib:ci
+                    env:
+                      - name: APP_NS
+                        value: $(APPLICATION_NAMESPACE)
+                      - name: APP_LABEL
+                        value: "$(APPLICATION_LABEL)"
+                      - name: TOTAL_CHAOS_DURATION
+                        value: "$(CHAOS_DURATION)"                          
+                    command: ["/bin/bash"]
+                    args:
+                    - -c 
+                    - ./pod-delete
+                    
