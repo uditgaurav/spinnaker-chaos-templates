@@ -1,0 +1,134 @@
+job:
+  preconfigured:
+    kubernetes:
+      - label: Install-Litmus
+        type: ChaosOperatorSetup
+        description: Install and configure litmus
+        cloudProvider: kubernetes
+        account: spinnaker
+        credentials: spinnaker
+        application: hello
+        waitForCompletion: true
+        parameters:
+          - name: CHAOS_OPERATOR_IMAGE
+            label: Image of ChaosOperator
+            description: ChaosOperator image to install litmus
+            mapping: manifest.spec.template.spec.containers[0].env[0].value
+            defaultValue: "litmuschaos/chaos-operator:latest"
+          - name: CHAOS_RUNNER_IMAGE
+            label: Image of ChaosRunner
+            description: ChaosRunner image to install litmus
+            mapping: manifest.spec.template.spec.containers[0].env[1].value
+            defaultValue: "litmuschaos/chaos-runner:latest"
+          - name: APPLICATION_NAMESPACE
+            label: Namespace of AUT
+            description: Namespace where chaos will occur
+            mapping: manifest.spec.template.spec.containers[0].env[2].value
+            defaultValue: "spinnaker"            
+        manifest:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: installation
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                containers: 
+                  - name: installation
+                    image: mayadataio/chaos-ci-lib:ci
+                    env:
+                      - name: OPERATOR_IMAGE
+                        value: $(CHAOS_OPERATOR_IMAGE)
+                      - name: RUNNER_IMAGE
+                        value: $(CHAOS_RUNNER_IMAGE)
+                      - name: APP_NS
+                        value: $(APPLICATION_NAMESPACE)                        
+                    command: ["/bin/bash"]
+                    args:
+                    - -c 
+                    - ./install-litmus
+      - label: Pod-Delete-Chaos
+        type: ChaosExperiment
+        description: Kill an application pod
+        cloudProvider: kubernetes
+        account: spinnaker
+        credentials: spinnaker
+        application: hello
+        waitForCompletion: true
+        parameters:
+          - name: APPLICATION_NAMESPACE
+            label: Namespace of AUT
+            description: Namespace where chaos will occur
+            mapping: manifest.spec.template.spec.containers[0].env[0].value
+            defaultValue: "spinnaker"
+          - name: APPLICATION_LABEL
+            label: Label of AUT
+            description: Label by which app is filtered
+            mapping: manifest.spec.template.spec.containers[0].env[1].value
+            defaultValue: "name=hello"
+          - name: CHAOS_DURATION
+            label: Chaos duration
+            description: The time duration for chaos insertion (in sec)	
+            mapping: manifest.spec.template.spec.containers[0].env[2].value
+            defaultValue: "30"                           
+        manifest:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+              name: run-pod-delete-chaos
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                containers: 
+                  - name: run-pod-delete-chaos
+                    image: mayadataio/chaos-ci-lib:ci
+                    env:
+                      - name: APP_NS
+                        value: $(APPLICATION_NAMESPACE)
+                      - name: APP_LABEL
+                        value: $(APPLICATION_LABEL)
+                      - name: TOTAL_CHAOS_DURATION
+                        value: "$(CHAOS_DURATION)"                          
+                    command: ["/bin/bash"]
+                    args:
+                    - -c 
+                    - ./pod-delete
+      - label: Uninstall-Litmus
+        type: ChaosOperatorRemove
+        description: Uninstall litmus and its components
+        cloudProvider: kubernetes
+        account: spinnaker
+        credentials: spinnaker
+        application: hello
+        waitForCompletion: true
+        parameters:
+          - name: APPLICATION_NAMESPACE
+            label: Namespace of AUT
+            description: Namespace where chaos will occur
+            mapping: manifest.spec.template.spec.containers[0].env[0].value
+            defaultValue: "spinnaker"
+        manifest:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: uninstallation
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                containers: 
+                  - name: uninstallation
+                    image: mayadataio/chaos-ci-lib:ci
+                    env:
+                      - name: APP_NS
+                        value: $(APPLICATION_NAMESPACE)
+                    command: ["/bin/bash"]
+                    args:
+                    - -c 
+                    - ./uninstall-litmus
+
